@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Move : MonoBehaviour {
+public class Player_Move : MonoBehaviour {
     [SerializeField] float speed;
     [SerializeField] float jumpForce;
     [SerializeField] Vector2 below;
@@ -25,7 +25,7 @@ public class Move : MonoBehaviour {
     private void FixedUpdate() //Independent of frame rate
     {
         float moveHorizontal = Input.GetAxis("Horizontal"); //Inputs set by Unity
-        if (moveHorizontal == 0)
+       /* if (moveHorizontal == 0)
         {
             anim.SetBool("moving", false);
         }
@@ -38,7 +38,7 @@ public class Move : MonoBehaviour {
         {
             player.flipX = true;
             anim.SetBool("moving", true);
-        }
+        }*/ //FOR ANIMATION
         //float moveVertical = Input.GetAxis("Vertical");
         //Vector2 movement = new Vector2(moveHorizontal, 0.0f);
         Vector2 movement = new Vector2(moveHorizontal * speed, 0.0f);
@@ -76,7 +76,7 @@ public class Move : MonoBehaviour {
         RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos); //cast line from (pos + dir) to current (pos), check for colliders in line
         //Debug.Log(hit.collider.name);
 
-        if (hit.collider.tag == "Ground")
+        if (hit.collider.tag == "Floor")
             canJump = true; //only true if player is touching ground
         //return (hit.collider != GetComponent<Collider2D>());
     }
