@@ -8,10 +8,11 @@ public class PlayerController : PhysicsObject
     public float maxSpeed = 7;
     public float jumpTakeOffSpeed = 7;
 
+    [SerializeField] float wallJumpTimer = 0.5f; //Time after walljump to block input?
+    private float timer = 0.0f; //tracks elapsed time
+
     private SpriteRenderer spriteRenderer;
     private Animator animator;
-
-    private bool canWallJump = false;
 
     //FROM: https://unity3d.com/learn/tutorials/topics/2d-game-creation/player-controller-script?playlist=17093
 
@@ -22,19 +23,30 @@ public class PlayerController : PhysicsObject
         //animator = GetComponent<Animator>();
     }
 
-    protected override void ComputeVelocity()
+    protected override void ComputeVelocity() //Called every frame by base class: PhysicsObject
     {
         Vector2 move = Vector2.zero;
 
         move.x = Input.GetAxis("Horizontal");
 
-        if (Input.GetButtonDown("Jump") && grounded)
+        //if (Input.GetButtonDown("Jump") && grounded)
+        if (Input.GetButtonDown("Jump")) //If player attempts to jump
         {
-            velocity.y = jumpTakeOffSpeed;
+            if (grounded) //jump normally
+            {
+                velocity.y = jumpTakeOffSpeed;
+            }
+
+            else if (canWallJump) //reverse direction and jump
+            {
+                velocity.y = jumpTakeOffSpeed;
+                move.x *= -1;
+                timer = Time.time + wallJumpTimer;
+            }
         }
-        else if (Input.GetButtonUp("Jump"))
+        else if (Input.GetButtonUp("Jump")) //If jump is no longer pressed
         {
-            if (velocity.y > 0)
+            if (velocity.y > 0) //Vertical velocity will begin to decrease
             {
                 velocity.y = velocity.y * 0.5f;
             }
@@ -53,6 +65,20 @@ public class PlayerController : PhysicsObject
 
         targetVelocity = move * maxSpeed;
     }
+
+    protected override void WallJump(int index)
+    {
+        if (hitBufferList[index].collider.gameObject.tag == "Wall")
+        {
+            //Debug.Log("HIT WALL!");
+            canWallJump = true;
+        }
+    }
+
+    /*protected void FixedUpdate() /////////////////////////    Does this work well with the parent FixedUpdate method? ////////////////////////////////
+    {
+
+    }*/
 
     private void OnCollisionStay2D(Collision2D collision)
     {
