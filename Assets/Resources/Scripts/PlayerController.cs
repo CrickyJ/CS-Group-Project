@@ -11,6 +11,8 @@ public class PlayerController : PhysicsObject
     private SpriteRenderer spriteRenderer;
     private Animator animator;
 
+    private bool canWallJump = false;
+
     //FROM: https://unity3d.com/learn/tutorials/topics/2d-game-creation/player-controller-script?playlist=17093
 
     // Use this for initialization
@@ -38,6 +40,7 @@ public class PlayerController : PhysicsObject
             }
         }
 
+        ///////////////////////// ANIMATION ////////////////////////////////////
         //bool flipSprite = (spriteRenderer.flipX ? (move.x > 0.01f) : (move.x < 0.01f));
         /*if (flipSprite)
         {
@@ -46,7 +49,18 @@ public class PlayerController : PhysicsObject
 
         animator.SetBool("grounded", grounded);
         animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);*/
+        ////////////////////////// END OF ANIMATION ///////////////////////////////
 
         targetVelocity = move * maxSpeed;
     }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Wall")
+            canWallJump = true;
+        else
+            canWallJump = false;
+            
+    }
 }
+
