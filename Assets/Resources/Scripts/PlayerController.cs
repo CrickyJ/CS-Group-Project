@@ -84,7 +84,7 @@ public class PlayerController : PhysicsObject
     {
         if (hitBufferList[index].collider.gameObject.tag == "Environment")
         {
-            Debug.Log("HIT WALL @ Velocity.y = " + velocity.y);
+            //Debug.Log("HIT WALL @ Velocity.y = " + velocity.y);
             canWallJump = true;
         }
     }
