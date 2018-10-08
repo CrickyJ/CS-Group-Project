@@ -1,4 +1,4 @@
-# CS-Group-Project -- Testing Branch
+# CS-Group-Project -- Player Branch
 unity project
 
-Trying to figure out Git :)
+Programming player movement and abilities
