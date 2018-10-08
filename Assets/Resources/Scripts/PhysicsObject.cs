@@ -9,7 +9,6 @@ public class PhysicsObject : MonoBehaviour
 {
     [Tooltip ("How flat ground must be for player to be still, default is 0.65")]
     public float minGroundNormalY = .65f; //How flat ground must be for player to be still
-    //public float gravityModifier = 1f;
     [SerializeField] protected float gravityModifier = 1f; //Default gravity modifier
 
     [Tooltip ("How much player is slowed while contacting wall, default is 1")]
@@ -52,7 +51,7 @@ public class PhysicsObject : MonoBehaviour
 
     }
 
-    protected virtual void WallJump(int index) { } //Called in PlayerController if contacting wall
+    protected virtual void WallSlide(int index) { } //Called in PlayerController if contacting wall
 
     void FixedUpdate()
     {
@@ -109,7 +108,8 @@ public class PhysicsObject : MonoBehaviour
 
                 else if (!grounded) //If player is NOT grounded
                 {
-                    WallJump(i); //If collider is NOT ground, attempt to WallJump
+                    WallSlide(i); //If collider is NOT ground, attempt to WallJump
+                    //Debug.Log("Trying to move: " + distance);
                 }
 
                 float projection = Vector2.Dot(velocity, currentNormal); //Prevents player from getting stuck in colliders (and zeroing velocity)

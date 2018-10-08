@@ -22,11 +22,12 @@ public class PlayerController : PhysicsObject
     void Awake()
     {
         //spriteRenderer = GetComponent<SpriteRenderer>();
-        //animator = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
     }
 
     protected override void ComputeVelocity() //Called every frame by base class: PhysicsObject
     {
+        animator.SetBool("isSliding", canWallJump);
         Vector2 move = Vector2.zero;
 
         move.x = Input.GetAxis("Horizontal");
@@ -79,11 +80,11 @@ public class PlayerController : PhysicsObject
         targetVelocity = move * maxSpeed;
     }
 
-    protected override void WallJump(int index)
+    protected override void WallSlide(int index) //If player is colliding with wall
     {
         if (hitBufferList[index].collider.gameObject.tag == "Environment")
         {
-            //Debug.Log("HIT WALL!");
+            Debug.Log("HIT WALL @ Velocity.y = " + velocity.y);
             canWallJump = true;
         }
     }
