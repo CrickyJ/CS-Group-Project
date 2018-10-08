@@ -8,8 +8,10 @@ public class PlayerController : PhysicsObject
     public float maxSpeed = 7;
     public float jumpTakeOffSpeed = 7;
 
-    [SerializeField] float wallJumpTimer = 0.5f; //Time after walljump to block input?
+    [Tooltip ("Horizontal input delay (in seconds) after wall-jumping.")]
+    [SerializeField] float wallJumpTimer = 0.5f; //Time after walljump to block input
     private float timer = 0.0f; //tracks elapsed time
+    private bool jumpedLeft; //tracks player direction just after walljump
 
     private SpriteRenderer spriteRenderer;
     private Animator animator;
@@ -29,6 +31,12 @@ public class PlayerController : PhysicsObject
 
         move.x = Input.GetAxis("Horizontal");
 
+        if ((move.x > 0) == jumpedLeft && Time.time < timer) //If player is still holding right after jumping from wall on their right
+        {
+            //Debug.Log("INPUT REVERSED");
+            move.x *= -1; //Reverse input
+        }
+
         //if (Input.GetButtonDown("Jump") && grounded)
         if (Input.GetButtonDown("Jump")) //If player attempts to jump
         {
@@ -40,8 +48,13 @@ public class PlayerController : PhysicsObject
             else if (canWallJump) //reverse direction and jump
             {
                 velocity.y = jumpTakeOffSpeed;
+                if (move.x > 0) //if player was holding right while walljumping
+                    jumpedLeft = true; //they want to jump left
+                else
+                    jumpedLeft = false; //they want to jump right
                 move.x *= -1;
-                timer = Time.time + wallJumpTimer;
+                timer = Time.time + wallJumpTimer; //Start timer
+                //Debug.Log("Starting timer.");
             }
         }
         else if (Input.GetButtonUp("Jump")) //If jump is no longer pressed
@@ -52,7 +65,7 @@ public class PlayerController : PhysicsObject
             }
         }
 
-        ///////////////////////// ANIMATION ////////////////////////////////////
+        ///////////////////////// ANIMATION CODE ////////////////////////////////////
         //bool flipSprite = (spriteRenderer.flipX ? (move.x > 0.01f) : (move.x < 0.01f));
         /*if (flipSprite)
         {
@@ -61,14 +74,14 @@ public class PlayerController : PhysicsObject
 
         animator.SetBool("grounded", grounded);
         animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);*/
-        ////////////////////////// END OF ANIMATION ///////////////////////////////
+        ////////////////////////// END OF ANIMATION CODE ///////////////////////////////
 
         targetVelocity = move * maxSpeed;
     }
 
     protected override void WallJump(int index)
     {
-        if (hitBufferList[index].collider.gameObject.tag == "Wall")
+        if (hitBufferList[index].collider.gameObject.tag == "Environment")
         {
             //Debug.Log("HIT WALL!");
             canWallJump = true;

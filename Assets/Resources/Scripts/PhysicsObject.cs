@@ -7,12 +7,12 @@ using UnityEngine;
 
 public class PhysicsObject : MonoBehaviour
 {
-
-    public float minGroundNormalY = .65f;
+    [Tooltip ("How flat ground must be for player to be still, default is 0.65")]
+    public float minGroundNormalY = .65f; //How flat ground must be for player to be still
     //public float gravityModifier = 1f;
     [SerializeField] protected float gravityModifier = 1f; //Default gravity modifier
 
-    [Tooltip ("Default is 1, increase for slower speed while contacting wall.")]
+    [Tooltip ("How much player is slowed while contacting wall, default is 1")]
     [SerializeField] protected float wallFriction = 1f; //gravity modifier while sliding on wall
 
     protected Vector2 targetVelocity; //Protected can be accessed by child classes
@@ -56,22 +56,17 @@ public class PhysicsObject : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (canWallJump) //if player is sliding down wall
+        if (canWallJump && velocity.y < 0) //if player is sliding down wall
         {
-            if (velocity.y > 0) //Stops player from sliding up wall
-            {
-                //velocity.y /= wallFriction / 2;
-                velocity.y = 0;
-            }
-            velocity += gravityModifier / wallFriction * Physics2D.gravity * Time.deltaTime; //calculate using wallFriction
-            //Debug.Log("Slowing fall...");
+                velocity += gravityModifier / wallFriction * Physics2D.gravity * Time.deltaTime; //calculate using wallFriction
+                //Debug.Log("Slowing fall...");
         }
         else
-            velocity += gravityModifier * Physics2D.gravity * Time.deltaTime; //accelration due to gravity
+            velocity += gravityModifier * Physics2D.gravity * Time.deltaTime; //calculate using default gravity
         velocity.x = targetVelocity.x;
 
         grounded = false;
-        canWallJump = false; //resets player's "wall jump" before each calculation
+        canWallJump = false; //player walljump status is reset before movement calculation
 
         Vector2 deltaPosition = velocity * Time.deltaTime; //calculate position change
 
