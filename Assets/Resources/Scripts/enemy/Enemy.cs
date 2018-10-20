@@ -6,8 +6,7 @@ using UnityEngine;
 public class Enemy : MonoBehaviour {
     //Components
     private Animator Animator;
-    private Rigidbody2D rb;
-    private Behavior behavior;
+    protected Rigidbody2D rb;
 
     //Health
     float Health;
@@ -18,7 +17,6 @@ public class Enemy : MonoBehaviour {
     /// How far from the center of this object the bottom of their collider is.
     /// </summary>
     public float GroundDistance;
-    public bool FacingRight = true;
     public bool Flying = false; //sets movetype
     protected enum MOVE_TYPE {
         WALKING, //Changes to DesiredVelocity will not modify Y-Speed
@@ -32,7 +30,6 @@ public class Enemy : MonoBehaviour {
 	public virtual void Start () {
         Animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        behavior = GetComponent<Behavior>();
         Health = HealthMax;
 
         //set appropriate move type
@@ -77,9 +74,6 @@ public class Enemy : MonoBehaviour {
 
     // Movement
     protected void DoMovement() {
-
-        behavior.PerformAction();
-
         //update rigidbody velocity to reflect DesiredVelocity
         if(MoveType == MOVE_TYPE.FLYING) {
             rb.velocity = DesiredVelocity;
