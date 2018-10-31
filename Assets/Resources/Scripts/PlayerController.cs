@@ -7,7 +7,7 @@ using UnityEngine;
 public class PlayerController : PhysicsObject
 {
     //Movement:
-    public float maxSpeed = 7, jumpTakeOffSpeed = 7;
+    public float maxSpeed = 7, jumpTakeOffSpeed = 7, dashSpeed = 5;
     //public float jumpTakeOffSpeed = 7;
 
     //Wall Jumping:
@@ -39,7 +39,8 @@ public class PlayerController : PhysicsObject
         animator = GetComponent<Animator>();
         shotSpawnDist = shotSpawn.localPosition.x;
         shotSpawnDiag = shotSpawnDist / 1.4142f; //diagonal aiming x-y coordinates are 1/sqrt(2) of shotSpawnDist
-        health = maxHP;
+        //health = maxHP;
+        health = 99;
     }
 
     protected override void ComputeVelocity() //Called every frame by base class: PhysicsObject
@@ -57,7 +58,6 @@ public class PlayerController : PhysicsObject
             move.x *= -1; //Reverse input
         }
 
-        //if (Input.GetButtonDown("Jump") && grounded)
         if (Input.GetButtonDown("Jump")) //If player attempts to jump
         {
             if (grounded) //jump normally
@@ -102,7 +102,12 @@ public class PlayerController : PhysicsObject
         else if (move.x > 0.01) aim(facing.right);
         else if (move.x < -0.01) aim(facing.left);
 
-        if (Input.GetButtonDown("Fire1"))
+        if(Input.GetButtonDown("Dash"))
+        {
+            move.x *= dashSpeed;
+        }
+
+        if (Input.GetButtonDown("Fire1")) //True for one frame
         {
             //Debug.Log("FIRE");
             FireWeapon();
@@ -175,20 +180,11 @@ public class PlayerController : PhysicsObject
         }
     }
 
-    private void animateSprite(Vector2 dir) //Determines direction for player sprite
-    {
-
-        //animator.SetBool("grounded", grounded);
-        //animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
-    }
-
     private void FireWeapon() //Determines how player will fire weapon
     {
         Instantiate(projectile, shotSpawn.position, shotSpawn.rotation); //spawn shot -- movement handled by shotController
         //GetComponent<AudioSource>().Play(); //play audio attached to shot object
     }
-
-    //private void 
 
     protected override void WallSlide(int index) //If player is colliding with wall
     {
@@ -200,15 +196,23 @@ public class PlayerController : PhysicsObject
         }
     }
 
-    /*private void OnCollissionStay2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision) //For the first frame a player touches collider
     {
-        if (grounded) return; //Cannot wall jump if on ground
-
-        if (collision.gameObject.tag == "Wall")
-            canWallJump = true;
-        else
-            canWallJump = false;
-            
-    }*/
+        if(collision.gameObject.CompareTag("PickUp"))
+        {
+            if (health < maxHP) //If health is not at maximum
+            {
+                health += 10;
+                if (health > maxHP) health = maxHP; //set health to max if it goes over
+                Debug.Log("HP: " + health + "/" + maxHP);
+            }
+            else
+            {
+                Debug.Log("Health Full! (HP = " + health + ")");
+                return;
+            }
+            Destroy(collision.gameObject);
+        }            
+    }
 }
 
