@@ -232,10 +232,12 @@ MonoBehaviour:
   wallFriction: 5
   maxSpeed: 7
   jumpTakeOffSpeed: 10
+  dashSpeed: 5
   wallJumpTimer: 0.1
   fireRate: 0
   projectile: {fileID: 1624533364265390, guid: 3695759d12c98694ab8c341278487438, type: 2}
   shotSpawn: {fileID: 4564017019579244}
+  maxHP: 100
 --- !u!124 &124208650373656396
 Behaviour:
   m_ObjectHideFlags: 1

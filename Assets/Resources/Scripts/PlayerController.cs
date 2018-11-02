@@ -19,7 +19,7 @@ public class PlayerController : PhysicsObject
     //Animation:
     private SpriteRenderer spriteRenderer;
     private Animator animator;
-    //bool flipSprite = false;
+    bool flipSprite = false;
 
     //Shooting:
     [SerializeField] float fireRate; //Time required to pass between shots
@@ -28,6 +28,7 @@ public class PlayerController : PhysicsObject
     private float shotSpawnDist; //default position of shotSpawn
     private float shotSpawnDiag; //used to calculate position for diagonal shooting
     enum facing {right=1, upright, up, upleft, left, downleft, down, downright} //possible aiming directions
+    facing direction=facing.right;
 
     //Status:
     [SerializeField] int maxHP = 100;
@@ -85,22 +86,86 @@ public class PlayerController : PhysicsObject
             }
         }
 
-        if(Input.GetAxisRaw("Vertical") > 0) //If up button is held
+        //direction = 0;
+        if (Input.GetAxisRaw("Vertical") > 0) //If up button is held
         {
-            if (move.x > 0.01) aim(facing.upright);
-            else if (move.x < -0.01) aim(facing.upleft);
-            else aim(facing.up);
+            if (move.x > 0.01) direction = facing.upright;
+            else if (move.x < -0.01) direction = facing.upleft;
+            else direction = facing.up;
         }
 
         else if (Input.GetAxisRaw("Vertical") < 0) //If down button is held
         {
-            if (move.x > 0.01) aim(facing.downright);
-            else if (move.x < -0.01) aim(facing.downleft);
-            else if (!grounded) aim(facing.down);
+            if (grounded)
+            {
+                //crouch
+            }
+            //if (move.x > 0.01) direction = facing.downright;
+            //else if (move.x < -0.01) direction = facing.downleft;
+            else direction = facing.down;
         }
 
-        else if (move.x > 0.01) aim(facing.right);
-        else if (move.x < -0.01) aim(facing.left);
+        else if (Input.GetAxisRaw("Aim") > 0) //Aim diagonally up
+        {
+            switch (direction)
+            {
+                case facing.right:
+                    direction = facing.upright;
+                    break;
+                case facing.left:
+                    direction = facing.upleft;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        else if (Input.GetAxisRaw("Aim") < 0) //Aim diagonally down
+        {
+            switch (direction)
+            {
+                case facing.right:
+                    direction = facing.downright;
+                    break;
+                case facing.left:
+                    direction = facing.downleft;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        else if (move.x > 0) //If moving right
+        {
+            direction = facing.right;
+        }
+        else if (move.x < 0) //If moving left
+        {
+            direction = facing.left;
+        }
+        else //if standing still
+        {
+            switch (direction)
+            {
+                case facing.upright:
+                case facing.downright:
+                    direction = facing.right;
+                    break;
+                case facing.upleft:
+                case facing.downleft:
+                    direction = facing.left;
+                    break;
+                case facing.up:
+                case facing.down:
+                    if (flipSprite) direction = facing.left;
+                    else direction = facing.right;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        aim(direction);
 
         if(Input.GetButtonDown("Dash"))
         {
@@ -116,19 +181,21 @@ public class PlayerController : PhysicsObject
         targetVelocity = move * maxSpeed;
     }
 
+
+
     private void aim(facing dir) //changes sprite and shotspawn location
     {
         switch(dir)
         {
             case facing.right: //Reset to default
-                spriteRenderer.flipX = false;
+                flipSprite= false;
                 shotSpawn.localPosition = new Vector3(shotSpawnDist, 0, 0);
                 shotSpawn.localRotation = Quaternion.Euler(0, 0, 0);
                 animator.SetInteger("direction", 0); //resets animation to default
                 break;
 
             case facing.upright:
-                spriteRenderer.flipX = false;
+                flipSprite = false;
                 shotSpawn.localPosition = new Vector3(shotSpawnDiag, shotSpawnDiag, 0);
                 shotSpawn.localRotation = Quaternion.Euler(0, 0, 45);
                 animator.SetInteger("direction", 2);
@@ -141,21 +208,21 @@ public class PlayerController : PhysicsObject
                 break;
 
             case facing.upleft:
-                spriteRenderer.flipX = true;
+                flipSprite = true;
                 shotSpawn.localPosition = new Vector3(-shotSpawnDiag, shotSpawnDiag, 0);
                 shotSpawn.localRotation = Quaternion.Euler(0, 0, 135);
                 animator.SetInteger("direction", 2);
                 break;
 
             case facing.left:
-                spriteRenderer.flipX = true;
+                flipSprite = true;
                 shotSpawn.localPosition = new Vector3(-shotSpawnDist, 0, 0);
                 shotSpawn.localRotation = Quaternion.Euler(0, 0, 180);
                 animator.SetInteger("direction", 0); //resets animation to default
                 break;
 
             case facing.downleft:
-                spriteRenderer.flipX = true;
+                flipSprite = true;
                 shotSpawn.localPosition = new Vector3(-shotSpawnDiag, -shotSpawnDiag, 0);
                 shotSpawn.localRotation = Quaternion.Euler(0, 0, -135);
                 animator.SetInteger("direction", 3);
@@ -168,7 +235,7 @@ public class PlayerController : PhysicsObject
                 break;
 
             case facing.downright:
-                spriteRenderer.flipX = false;
+                flipSprite = false;
                 shotSpawn.localPosition = new Vector3(shotSpawnDiag, -shotSpawnDiag, 0);
                 shotSpawn.localRotation = Quaternion.Euler(0, 0, -45);
                 animator.SetInteger("direction", 3);
@@ -178,6 +245,7 @@ public class PlayerController : PhysicsObject
                 Debug.Log("DEFAULT");
                 break;
         }
+        spriteRenderer.flipX = flipSprite;
     }
 
     private void FireWeapon() //Determines how player will fire weapon
