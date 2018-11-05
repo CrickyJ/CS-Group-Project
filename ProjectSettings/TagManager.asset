@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Environment
   - PickUp
+  - Enemy
+  - Hazard
   layers:
   - Default
   - TransparentFX

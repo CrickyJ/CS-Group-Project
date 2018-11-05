@@ -235,9 +235,10 @@ MonoBehaviour:
   dashSpeed: 5
   dashTime: 0.1
   wallJumpTimer: 0.1
-  fireRate: 0
+  shotCooldown: 0.4
   projectile: {fileID: 1624533364265390, guid: 3695759d12c98694ab8c341278487438, type: 2}
   shotSpawn: {fileID: 4564017019579244}
+  crouchShot: 0.25
   maxHP: 100
 --- !u!124 &124208650373656396
 Behaviour:

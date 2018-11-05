@@ -6,16 +6,22 @@ using UnityEngine;
 
 public class PlayerController : PhysicsObject
 {
-    //Movement:
-    public float maxSpeed = 7,  //Horizontal speed
-        jumpTakeOffSpeed = 7,   //Jump height
-        dashSpeed = 5,          //Speed of dash
-        dashTime = 0.5f;        //Time length of dash
-    private float nextDash = 0.0f; //Cooldown for dash
-    private bool dashing = false;   //True if player presses dash button
+    [Header("Movement")]
+    //Basic Movement:
+    public float maxSpeed = 7;          //Horizontal speed
+    public float jumpTakeOffSpeed = 7;  //Jump height
+    [SerializeField] const int jumpsAllowed = 2;
+    private int jumpNumber = 0;
 
+    [Space(5)] //Space out attributes in editor
+    [SerializeField] float dashSpeed = 5;         //Speed of dash
+    [SerializeField] float dashTime = 0.5f;       //Time length of dash
+    private float nextDash = 0.0f;      //Cooldown for dash
+    private bool dashing = false;       //True if player presses dash button
+
+    [Space(5)]
     //Wall Jumping:
-    [Tooltip ("Horizontal input delay (in seconds) after wall-jumping.")]
+    [Tooltip ("Horizontal input reversed right after wall jumping")]
     [SerializeField] float wallJumpTimer = 0.5f; //Time after walljump to block input
     private float timer = 0.0f; //tracks elapsed time
     private bool jumpedLeft; //tracks player direction just after walljump
@@ -26,17 +32,28 @@ public class PlayerController : PhysicsObject
     bool flipSprite = false;
 
     //Shooting:
-    [SerializeField] float fireRate; //Time required to pass between shots
+    [Header("Shooting")]
+    [SerializeField] float shotCooldown = 0.2f; //Time required to pass between shots
+    private float nextShot = 0.0f;
     [SerializeField] GameObject projectile; //Object / Prefab spawned for projectile
+
     [SerializeField] Transform shotSpawn; //Position shot will spawn from
+    [SerializeField] float crouchShot; //How much crosshair is lowered while crouching
     private float shotSpawnDist; //default position of shotSpawn
     private float shotSpawnDiag; //used to calculate position for diagonal shooting
     enum facing {right=1, upright, up, upleft, left, downleft, down, downright} //possible aiming directions
-    facing direction=facing.right;
+    facing direction=facing.right; //current aiming direction
+    bool crouching = false;//crouched or standing
 
     //Status:
+    [Header("Status")]
     [SerializeField] int maxHP = 100;
     int health;
+
+    [Tooltip ("Invincibility time (in seconds) after being hurt")]
+    [SerializeField] float recoverTime = 0.5f; //Recovery time in seconds
+    private IEnumerator coroutine;
+    private bool invincible=false; //Player cannot be hurt while invincible
 
     void Awake() //Initialize Player Object
     {
@@ -44,26 +61,28 @@ public class PlayerController : PhysicsObject
         animator = GetComponent<Animator>();
         shotSpawnDist = shotSpawn.localPosition.x;
         shotSpawnDiag = shotSpawnDist / 1.4142f; //diagonal aiming x-y coordinates are 1/sqrt(2) of shotSpawnDist
-        health = 99;
+        health = maxHP;
     }
 
     protected override void ComputeVelocity() //Called every frame by base class: PhysicsObject
     {
         animator.SetBool("isSliding", canWallJump);
         Vector2 move = Vector2.zero; //Reset movement vector for input & calculations
+        crouching = false;
         move.x = Input.GetAxisRaw("Horizontal");
+        if (grounded) jumpNumber = 0;
 
         if ((move.x > 0) == jumpedLeft && Time.time < timer) //If player is moving towards wall after jumping
         {
-            //Debug.Log("INPUT REVERSED");
             move.x *= -1; //Reverse input
         }
 
         if (Input.GetButtonDown("Jump")) //If player attempts to jump
         {
-            if (grounded) //jump normally
+            if (jumpNumber < jumpsAllowed) //jump normally
             {
                 velocity.y = jumpTakeOffSpeed;
+                jumpNumber++;
             }
 
             else if (canWallJump) //reverse direction and jump
@@ -98,11 +117,15 @@ public class PlayerController : PhysicsObject
         {
             if (grounded)
             {
-                //crouch
+                crouching = true;
             }
             //if (move.x > 0.01) direction = facing.downright;
             //else if (move.x < -0.01) direction = facing.downleft;
-            else direction = facing.down;
+            else
+            {
+                direction = facing.down;
+                crouching = false;
+            }
         }
 
         else if (Input.GetAxisRaw("Aim") > 0) //Aim diagonally up
@@ -143,7 +166,7 @@ public class PlayerController : PhysicsObject
         {
             direction = facing.left;
         }
-        else //if standing still
+        else //if standing still, default to left or right direction
         {
             switch (direction)
             {
@@ -165,7 +188,7 @@ public class PlayerController : PhysicsObject
             }
         }
 
-        Aim(direction);
+        Aim(direction); //animate sprite and move crosshair
 
         if (Input.GetButtonDown("Dash") && Time.time > (nextDash + dashTime*2)) //Begin dash
         {
@@ -182,7 +205,7 @@ public class PlayerController : PhysicsObject
         }
         else dashing = false; //End dash after period of time
 
-        if (Input.GetButtonDown("Fire1")) //True for one frame
+        if (Input.GetButton("Fire1")) //If holding fire button
         {
             FireWeapon();
         }
@@ -190,63 +213,76 @@ public class PlayerController : PhysicsObject
         targetVelocity = move * maxSpeed;
     }
 
-
-
     private void Aim(facing dir) //changes sprite and shotspawn location
     {
+        float x = shotSpawnDist, y = 0, rot=0;
         switch(dir)
         {
             case facing.right: //Reset to default
                 flipSprite= false;
-                shotSpawn.localPosition = new Vector3(shotSpawnDist, 0, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, 0);
+                //shotSpawn.localPosition = new Vector3(shotSpawnDist, 0, 0);
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, 0);
                 animator.SetInteger("direction", 0); //resets animation to default
                 break;
 
             case facing.upright:
                 flipSprite = false;
-                shotSpawn.localPosition = new Vector3(shotSpawnDiag, shotSpawnDiag, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, 45);
+                //shotSpawn.localPosition = new Vector3(shotSpawnDiag, shotSpawnDiag, 0);
+                x = shotSpawnDiag; y = shotSpawnDiag;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, 45);
+                rot = 45;
                 animator.SetInteger("direction", 2);
                 break;
 
             case facing.up:
-                shotSpawn.localPosition = new Vector3(0, shotSpawnDist, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, 90);
+                //shotSpawn.localPosition = new Vector3(0, shotSpawnDist, 0);
+                x = 0; y = shotSpawnDist;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, 90);
+                rot = 90;
                 animator.SetInteger("direction", 1);
                 break;
 
             case facing.upleft:
                 flipSprite = true;
-                shotSpawn.localPosition = new Vector3(-shotSpawnDiag, shotSpawnDiag, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, 135);
+                //shotSpawn.localPosition = new Vector3(-shotSpawnDiag, shotSpawnDiag, 0);
+                x = -shotSpawnDiag; y = shotSpawnDiag;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, 135);
+                rot = 135;
                 animator.SetInteger("direction", 2);
                 break;
 
             case facing.left:
                 flipSprite = true;
-                shotSpawn.localPosition = new Vector3(-shotSpawnDist, 0, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, 180);
-                animator.SetInteger("direction", 0); //resets animation to default
+                //shotSpawn.localPosition = new Vector3(-shotSpawnDist, 0, 0);
+                x = -shotSpawnDist; //y = 0;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, 180);
+                rot = 180;
+                animator.SetInteger("direction", 0); //resets animation to default (but flipped sprite)
                 break;
 
             case facing.downleft:
                 flipSprite = true;
-                shotSpawn.localPosition = new Vector3(-shotSpawnDiag, -shotSpawnDiag, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, -135);
+                //shotSpawn.localPosition = new Vector3(-shotSpawnDiag, -shotSpawnDiag, 0);
+                x = -shotSpawnDiag; y = -shotSpawnDiag;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, -135);
+                rot = -135;
                 animator.SetInteger("direction", 3);
                 break;
 
             case facing.down:
-                shotSpawn.localPosition = new Vector3(0, -shotSpawnDist, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, -90);
+                //shotSpawn.localPosition = new Vector3(0, -shotSpawnDist, 0);
+                x = 0; y = -shotSpawnDist;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, -90);
+                rot = -90;
                 animator.SetInteger("direction", 4);
                 break;
 
             case facing.downright:
                 flipSprite = false;
-                shotSpawn.localPosition = new Vector3(shotSpawnDiag, -shotSpawnDiag, 0);
-                shotSpawn.localRotation = Quaternion.Euler(0, 0, -45);
+                //shotSpawn.localPosition = new Vector3(shotSpawnDiag, -shotSpawnDiag, 0);
+                x = shotSpawnDiag; y = -shotSpawnDiag;
+                //shotSpawn.localRotation = Quaternion.Euler(0, 0, -45);
+                rot = -45;
                 animator.SetInteger("direction", 3);
                 break;
 
@@ -254,13 +290,25 @@ public class PlayerController : PhysicsObject
                 Debug.Log("DEFAULT");
                 break;
         }
-        spriteRenderer.flipX = flipSprite;
+        spriteRenderer.flipX = flipSprite; //Flip sprite if facing left
+        if (crouching) y -= crouchShot;
+        shotSpawn.localPosition = new Vector2(x, y); //Move crosshair for weapon
+        shotSpawn.localRotation = Quaternion.Euler(0, 0, rot);
     }
 
     private void FireWeapon() //Determines how player will fire weapon
     {
-        Instantiate(projectile, shotSpawn.position, shotSpawn.rotation); //spawn shot -- movement handled by shotController
-        //GetComponent<AudioSource>().Play(); //play audio attached to shot object
+        if (Time.time > nextShot)
+        {
+            Instantiate(projectile, shotSpawn.position, shotSpawn.rotation); //spawn shot -- movement handled by shotController
+            //GetComponent<AudioSource>().Play(); //play audio attached to shot object
+            nextShot = Time.time + shotCooldown;
+        }
+    }
+
+    private string printHealth()
+    {
+        return "HP = " + health + " / " + maxHP;
     }
 
     //private float Dash(){}
@@ -277,21 +325,55 @@ public class PlayerController : PhysicsObject
 
     private void OnTriggerEnter2D(Collider2D collision) //For the first frame a player touches collider
     {
-        if(collision.gameObject.CompareTag("PickUp"))
+        if(collision.gameObject.CompareTag("PickUp")) //Gathering pickups
         {
             if (health < maxHP) //If health is not at maximum
             {
                 health += 10;
                 if (health > maxHP) health = maxHP; //set health to max if it goes over
-                Debug.Log("HP: " + health + "/" + maxHP);
+                Debug.Log(printHealth());
             }
             else
             {
-                Debug.Log("Health Full! (HP = " + health + ")");
+                Debug.Log("Health Full!" + printHealth());
                 return;
             }
             Destroy(collision.gameObject);
-        }            
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    //private void OnCollsionEnter2d(Collision2D collision)
+    {
+        if (!invincible && collision.gameObject.CompareTag("Enemy")) //Hitting Enemy
+        {
+            health -= 10;
+            coroutine = IsInvincible();
+            StartCoroutine(coroutine);
+            Debug.Log(printHealth());
+            //Invincible for time
+            //Yield wait for seconds -- coroutine starts and waits a period of time
+            //No longer invincible
+        }
+
+        else if (!invincible && collision.gameObject.CompareTag("Hazard")) //Hitting hazard or enemy projectile
+        {
+            health -= 10;
+            coroutine = IsInvincible();
+            StartCoroutine(coroutine);
+            Debug.Log(printHealth());
+            //Yield wait for seconds -- coroutine starts and waits a period of time
+        }
+        else if (invincible) Debug.Log("Damage Blocked");
+    }
+
+    private IEnumerator IsInvincible()
+    {
+        Debug.Log("Now invincible");
+        invincible = true;
+        yield return new WaitForSeconds(recoverTime);
+        invincible = false;
+        Debug.Log("NOT Invincible");
     }
 }
 

@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class PhysicsObject : MonoBehaviour
 {
+    [Header("Physics Attributes")]
     [Tooltip ("How flat ground must be for player to be still, default is 0.65")]
     public float minGroundNormalY = .65f; //How flat ground must be for player to be still
     [SerializeField] protected float gravityModifier = 1f; //Default gravity modifier
@@ -24,6 +25,7 @@ public class PhysicsObject : MonoBehaviour
     protected List<RaycastHit2D> hitBufferList = new List<RaycastHit2D>(16);//Raycast List only keeps track of current collisions
 
     protected bool canWallJump;
+
 
     protected const float minMoveDistance = 0.001f; //Minimum distance to move in order to check collision (will not check if stopped)
     protected const float shellRadius = 0.01f; //Checks for colliders nearby, making sure player does not get stuck
