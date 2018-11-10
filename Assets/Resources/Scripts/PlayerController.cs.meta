@@ -3,7 +3,11 @@ guid: 374ca94be8bb5c445bf5caf1b88bd93b
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - projectile: {fileID: 1624533364265390, guid: 3695759d12c98694ab8c341278487438,
+      type: 2}
+  - shotSpawn: {fileID: 4564017019579244, guid: af8b2052f4786474abf31b964189849d,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
