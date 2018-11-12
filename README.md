@@ -1,4 +1,4 @@
-# CS-Group-Project -- Player Branch
+# CS-Group-Project
 unity project
 
-Programming player movement and abilities
+making a game with others
