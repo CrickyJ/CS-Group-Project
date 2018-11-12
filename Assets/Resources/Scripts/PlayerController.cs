@@ -100,7 +100,7 @@ public class PlayerController : PhysicsObject
         
         if (grounded) jumpNumber = 0;
 
-        if ((move.x > 0) == jumpedLeft && Time.time < timer) //If player is moving towards wall after jumping
+        if ((move.x > 0) == jumpedLeft && Time.time < timer) //Player input reversed after wall jumping
         {
             move.x *= -1; //Reverse input
         }
@@ -148,6 +148,7 @@ public class PlayerController : PhysicsObject
         }
         else if (jumpNumber < jumpsAllowed) //mid-air jump
         {
+            animator.SetTrigger("doublejump");
             velocity.y = jumpTakeOffSpeed;
             jumpNumber++;
         }
