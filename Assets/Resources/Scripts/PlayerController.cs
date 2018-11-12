@@ -81,6 +81,9 @@ public class PlayerController : PhysicsObject
         {
             if (jumpNumber < jumpsAllowed) //jump normally
             {
+                if (jumpNumber == 1)
+                    animator.SetTrigger("doubleJump");
+
                 velocity.y = jumpTakeOffSpeed;
                 jumpNumber++;
             }
@@ -211,6 +214,10 @@ public class PlayerController : PhysicsObject
         }
 
         targetVelocity = move * maxSpeed;
+
+        animator.SetBool("grounded", grounded);
+        animator.SetBool("dashing", dashing);
+        animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
     }
 
     private void Aim(facing dir) //changes sprite and shotspawn location
@@ -303,6 +310,8 @@ public class PlayerController : PhysicsObject
             Instantiate(projectile, shotSpawn.position, shotSpawn.rotation); //spawn shot -- movement handled by shotController
             //GetComponent<AudioSource>().Play(); //play audio attached to shot object
             nextShot = Time.time + shotCooldown;
+            animator.SetTrigger("fire");
+            Debug.Log("Fire!");
         }
     }
 
