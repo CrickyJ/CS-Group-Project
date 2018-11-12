@@ -6,31 +6,48 @@ using UnityEngine;
 
 public class PlayerController : PhysicsObject
 {
+    
+    #region Movement
     [Header("Movement")]
     //Basic Movement:
+    [SerializeField] private bool enableMoreJumps = true;
     public float maxSpeed = 7;          //Horizontal speed
+    Vector2 move; //Changes based on input
     public float jumpTakeOffSpeed = 7;  //Jump height
-    [SerializeField] const int jumpsAllowed = 2;
+    [SerializeField] private int jumpsAllowed = 2;
     private int jumpNumber = 0;
+    #endregion
 
-    [Space(5)] //Space out attributes in editor
-    [SerializeField] float dashSpeed = 5;         //Speed of dash
-    [SerializeField] float dashTime = 0.5f;       //Time length of dash
+    #region Dashing
+    [Header("Dashing")]
+    [SerializeField] private bool enableDash = true;
+    [SerializeField] float dashSpeed = 5;       //Speed of dash
+    [SerializeField] float dashTime = 0.5f;     //Time length of dash
+    [SerializeField] float dashCoolDown = 1.0f; //Minimum time before dashing again
     private float nextDash = 0.0f;      //Cooldown for dash
     private bool dashing = false;       //True if player presses dash button
+    private IEnumerator dashCoroutine;
+    #endregion
 
-    [Space(5)]
-    //Wall Jumping:
+    #region Wall Jumping
+    [Header("Wall Jump")]
+    [SerializeField] private bool enableWallJump = true;
     [Tooltip ("Horizontal input reversed right after wall jumping")]
     [SerializeField] float wallJumpTimer = 0.5f; //Time after walljump to block input
     private float timer = 0.0f; //tracks elapsed time
     private bool jumpedLeft; //tracks player direction just after walljump
+    private bool wallSliding;
+    private IEnumerator wallCoroutine;
+    #endregion
 
+    #region Animation
     //Animation:
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     bool flipSprite = false;
+    #endregion
 
+    #region Shooting
     //Shooting:
     [Header("Shooting")]
     [SerializeField] float shotCooldown = 0.2f; //Time required to pass between shots
@@ -44,16 +61,20 @@ public class PlayerController : PhysicsObject
     enum facing {right=1, upright, up, upleft, left, downleft, down, downright} //possible aiming directions
     facing direction=facing.right; //current aiming direction
     bool crouching = false;//crouched or standing
+    #endregion
 
+    #region Status
     //Status:
     [Header("Status")]
     [SerializeField] int maxHP = 100;
     int health;
-
     [Tooltip ("Invincibility time (in seconds) after being hurt")]
     [SerializeField] float recoverTime = 0.5f; //Recovery time in seconds
-    private IEnumerator coroutine;
+    private float knockbackTime = 0.1f;
+    private IEnumerator hitCoroutine;
     private bool invincible=false; //Player cannot be hurt while invincible
+    private bool flinching = false; //True when player is hit
+    #endregion
 
     void Awake() //Initialize Player Object
     {
@@ -62,14 +83,24 @@ public class PlayerController : PhysicsObject
         shotSpawnDist = shotSpawn.localPosition.x;
         shotSpawnDiag = shotSpawnDist / 1.4142f; //diagonal aiming x-y coordinates are 1/sqrt(2) of shotSpawnDist
         health = maxHP;
+        if (!enableMoreJumps) jumpsAllowed = 1; //Only one jump if multiple is not allowed
     }
 
     protected override void ComputeVelocity() //Called every frame by base class: PhysicsObject
     {
         animator.SetBool("isSliding", canWallJump);
-        Vector2 move = Vector2.zero; //Reset movement vector for input & calculations
+        if(flinching) //When player is hit, input is not accepted
+        {
+            knockBack(2); //player is pushed back
+            return;
+        }
+
+        
+
+        move = Vector2.zero; //Reset movement vector for input & calculations
         crouching = false;
         move.x = Input.GetAxisRaw("Horizontal");
+        
         if (grounded) jumpNumber = 0;
 
         if ((move.x > 0) == jumpedLeft && Time.time < timer) //If player is moving towards wall after jumping
@@ -77,43 +108,145 @@ public class PlayerController : PhysicsObject
             move.x *= -1; //Reverse input
         }
 
-        if (Input.GetButtonDown("Jump")) //If player attempts to jump
+        if (Input.GetButtonDown("Jump")) //When jump is first pressed
         {
-            if (jumpNumber < jumpsAllowed) //jump normally
-            {
-                velocity.y = jumpTakeOffSpeed;
-                jumpNumber++;
-            }
-
-            else if (canWallJump) //reverse direction and jump
-            {
-                velocity.y = jumpTakeOffSpeed;
-                if (move.x > 0) //if player was holding right while walljumping
-                    jumpedLeft = true; //they want to jump left
-                else //if player was holding left
-                    jumpedLeft = false; //they want to jump right
-                move.x *= -1;
-                timer = Time.time + wallJumpTimer; //Start timer
-                //Debug.Log("Starting timer.");
-            }
+            TryJump(); //Move player upward
         }
-        else if (Input.GetButtonUp("Jump")) //If jump is no longer pressed
+        else if (Input.GetButtonUp("Jump")) //When no longer holding jump
         {
-            if (velocity.y > 0) //Vertical velocity will begin to decrease
-            {
-                velocity.y = velocity.y * 0.5f;
-            }
+            StopJump(); //Stop upward force
         }
 
-        //direction = 0;
-        if (Input.GetAxisRaw("Vertical") > 0) //If up button is held
+        Aim(Input.GetAxisRaw("Vertical"));
+
+        if (enableDash && Input.GetButtonDown("Dash")) //Speed player up
+        {
+            StartDash();
+        }
+        ContinueDash(); //Speeds up player for a brief time after pressing dash       
+
+        if (Input.GetButton("Fire1")) //If holding fire button
+        {
+            FireWeapon();
+        }
+
+        targetVelocity = move * maxSpeed; //Set velocity to be computed in PhysicsObject script
+    }
+
+    private void TryJump()
+    {
+        
+        if (grounded) //jump normally
+        {
+            velocity.y = jumpTakeOffSpeed;
+            jumpNumber++;
+        }
+
+        else if (canWallJump) //reverse direction and jump
+        {
+            WallJump();
+        }
+        else if (jumpNumber < jumpsAllowed) //mid-air jump
+        {
+            velocity.y = jumpTakeOffSpeed;
+            jumpNumber++;
+        }
+    }
+
+    private void WallJump()
+    {
+        velocity.y = jumpTakeOffSpeed;
+        if (move.x > 0) //if player was holding right while walljumping
+            jumpedLeft = true; //they want to jump left
+        else //if player was holding left
+            jumpedLeft = false; //they want to jump right
+        move.x *= -1;
+        timer = Time.time + wallJumpTimer; //Start timer
+    }
+
+    private void StopJump()
+    {
+        if (velocity.y > 0) //Vertical velocity will begin to decrease
+        {
+            velocity.y = velocity.y * 0.5f;
+        }
+    }
+
+    private void GripWall() //Changes input while on wall
+    {
+        if (wallSliding) return; //if player is already gripping wall
+        else
+        {
+            //Debug.Log("START: Wall Coroutine");
+            float dir = move.x;
+            if (wallCoroutine != null) //if coroutine has already started
+            {
+                StopCoroutine(wallCoroutine); //Precaution for coroutine errors
+            }
+            wallCoroutine = Sliding(dir);
+            StartCoroutine(wallCoroutine);
+        }
+    }
+
+    private IEnumerator Sliding(float dir) //Player does not move away from wall for a set time
+    {
+        wallSliding = true;
+        if (dir > 0) //Wall is on right
+        {
+            //Debug.Log("Right");
+            while (canWallJump)
+            {
+                if(move.x <= 0)
+                {
+                    move.x = 1;
+                    yield return new WaitForSeconds(1);
+                    Debug.Log("BLOCK");
+                }
+                yield return null;
+            }
+        }
+        else if (dir < 0) //Wall is on left
+        {
+            //Debug.Log("Left");
+            while (canWallJump)
+            {
+                if (move.x >= 0)
+                {
+                    move.x = -1;
+                    yield return new WaitForSeconds(1);
+                    Debug.Log("BLOCK");
+                }
+                yield return null;
+            }
+        }
+        else Debug.Log("NO WALL");
+        
+        wallSliding = false;
+    }
+
+    private bool InputHeld()
+    {
+        return false;
+    }
+
+    protected override void WallSlide(int index) //If player is colliding with wall
+    {
+        if (enableWallJump && hitBufferList[index].collider.gameObject.CompareTag("Environment"))
+        {
+            canWallJump = true; //slows down player
+        }
+    }
+
+    private void Aim(float vert)
+    {
+        if (vert > 0) //If up button is held
         {
             if (move.x > 0.01) direction = facing.upright;
             else if (move.x < -0.01) direction = facing.upleft;
             else direction = facing.up;
         }
 
-        else if (Input.GetAxisRaw("Vertical") < 0) //If down button is held
+        else if (vert < 0) //If down button is held
         {
             if (grounded)
             {
@@ -188,32 +321,10 @@ public class PlayerController : PhysicsObject
             }
         }
 
-        Aim(direction); //animate sprite and move crosshair
-
-        if (Input.GetButtonDown("Dash") && Time.time > (nextDash + dashTime*2)) //Begin dash
-        {
-            //Debug.Log("Start Dash");
-            dashing = true; //Player speed will be increased
-            nextDash = Time.time + dashTime; //Sets time when player can next dash
-        }
-
-        if (dashing && Time.time < nextDash) //Continue dash
-        {
-            move.x *= dashSpeed;
-            velocity.y = 0;
-            //Debug.Log("Still dashing");
-        }
-        else dashing = false; //End dash after period of time
-
-        if (Input.GetButton("Fire1")) //If holding fire button
-        {
-            FireWeapon();
-        }
-
-        targetVelocity = move * maxSpeed;
+        Animate(direction); //animate sprite and move crosshair
     }
 
-    private void Aim(facing dir) //changes sprite and shotspawn location
+    private void Animate(facing dir) //changes sprite and shotspawn location
     {
         float x = shotSpawnDist, y = 0, rot=0;
         switch(dir)
@@ -305,22 +416,35 @@ public class PlayerController : PhysicsObject
             nextShot = Time.time + shotCooldown;
         }
     }
-
-    private string printHealth()
+        
+    private void StartDash() //When dash is ready
     {
-        return "HP = " + health + " / " + maxHP;
+        if (Time.time > nextDash) //Dash cooldown prevents subsequent dashes
+        {
+            //Debug.Log("Start Dash");
+            dashCoroutine = Dashing();
+            StartCoroutine(dashCoroutine);
+            nextDash = Time.time + dashCoolDown; //Sets time when player can next dash
+        }
+        else Debug.Log("Can't Dash Yet!");
     }
 
-    //private float Dash(){}
-
-    protected override void WallSlide(int index) //If player is colliding with wall
+    private IEnumerator Dashing() //Set dashing to true
     {
-        //if (hitBufferList[index].collider.gameObject.tag == "Environment")
-        if (hitBufferList[index].collider.gameObject.CompareTag("Environment"))
+        dashing = true;
+        yield return new WaitForSeconds(dashTime);
+        dashing = false;
+    }
+
+    private void ContinueDash() //Increase speed while dashing
+    {
+        if (dashing) //Continue dash
         {
-            //Debug.Log("HIT WALL @ Velocity.y = " + velocity.y);
-            canWallJump = true;
+            move.x *= dashSpeed;
+            velocity.y = 0;
+            //Debug.Log("Still dashing");
         }
+        //else dashing = false; //End dash after period of time
     }
 
     private void OnTriggerEnter2D(Collider2D collision) //For the first frame a player touches collider
@@ -331,11 +455,11 @@ public class PlayerController : PhysicsObject
             {
                 health += 10;
                 if (health > maxHP) health = maxHP; //set health to max if it goes over
-                Debug.Log(printHealth());
+                printHealth();
             }
             else
             {
-                Debug.Log("Health Full!" + printHealth());
+                Debug.Log("Health Full!"); printHealth();
                 return;
             }
             Destroy(collision.gameObject);
@@ -347,33 +471,51 @@ public class PlayerController : PhysicsObject
     {
         if (!invincible && collision.gameObject.CompareTag("Enemy")) //Hitting Enemy
         {
-            health -= 10;
-            coroutine = IsInvincible();
-            StartCoroutine(coroutine);
-            Debug.Log(printHealth());
-            //Invincible for time
-            //Yield wait for seconds -- coroutine starts and waits a period of time
-            //No longer invincible
+            hurt(10);
         }
 
         else if (!invincible && collision.gameObject.CompareTag("Hazard")) //Hitting hazard or enemy projectile
         {
-            health -= 10;
-            coroutine = IsInvincible();
-            StartCoroutine(coroutine);
-            Debug.Log(printHealth());
-            //Yield wait for seconds -- coroutine starts and waits a period of time
+            hurt(10);
         }
         else if (invincible) Debug.Log("Damage Blocked");
     }
 
-    private IEnumerator IsInvincible()
+    private void hurt(int damage) //Reduce health and make invulnerable while recovering
     {
-        Debug.Log("Now invincible");
+        health -= damage;
+        
+        //if (health == 0) die();
+        hitCoroutine = Recovering();
+        StartCoroutine(hitCoroutine);
+    }
+
+    private void knockBack(int force) //move player backwards when hit
+    {
+        if(!flipSprite) //Facing right
+        {
+            targetVelocity.x = -force;
+        }
+        else //Facing left
+        {
+            targetVelocity.x = force;
+        }
+    }
+
+    private IEnumerator Recovering() //Player is invincible for a short amount of time
+    {
         invincible = true;
+        flinching = true;
+        velocity.y = jumpTakeOffSpeed / 3; //player moves up in the air
+        yield return new WaitForSeconds(knockbackTime);
+        flinching = false;
         yield return new WaitForSeconds(recoverTime);
         invincible = false;
-        Debug.Log("NOT Invincible");
     }
-}
 
+    private void printHealth()
+    {
+        Debug.Log("HP: " + health + " / " + maxHP);
+    }
+
+}
