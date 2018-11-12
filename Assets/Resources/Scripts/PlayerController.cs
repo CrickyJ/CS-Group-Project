@@ -94,9 +94,6 @@ public class PlayerController : PhysicsObject
             knockBack(2); //player is pushed back
             return;
         }
-
-        
-
         move = Vector2.zero; //Reset movement vector for input & calculations
         crouching = false;
         move.x = Input.GetAxisRaw("Horizontal");
@@ -131,11 +128,14 @@ public class PlayerController : PhysicsObject
         }
 
         targetVelocity = move * maxSpeed; //Set velocity to be computed in PhysicsObject script
+		animator.SetBool("grounded", grounded);
+		animator.SetBool("dashing", dashing);
+		animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
     }
 
     private void TryJump()
     {
-        
+
         if (grounded) //jump normally
         {
             velocity.y = jumpTakeOffSpeed;
@@ -177,14 +177,22 @@ public class PlayerController : PhysicsObject
         if (wallSliding) return; //if player is already gripping wall
         else
         {
-            //Debug.Log("START: Wall Coroutine");
-            float dir = move.x;
-            if (wallCoroutine != null) //if coroutine has already started
+            if (grounded) //jump normally
             {
-                StopCoroutine(wallCoroutine); //Precaution for coroutine errors
+                velocity.y = jumpTakeOffSpeed;
+                jumpNumber++;
             }
-            wallCoroutine = Sliding(dir);
-            StartCoroutine(wallCoroutine);
+
+            else if (canWallJump) //reverse direction and jump
+            {
+                WallJump();
+            }
+            else if (jumpNumber < jumpsAllowed) //mid-air jump
+            {
+                animator.SetTrigger("doubleJump");
+                velocity.y = jumpTakeOffSpeed;
+                jumpNumber++;
+            }
         }
     }
 
@@ -219,14 +227,8 @@ public class PlayerController : PhysicsObject
                 yield return null;
             }
         }
-        else Debug.Log("NO WALL");
-        
+        else Debug.Log("NO WALL");        
         wallSliding = false;
-    }
-
-    private bool InputHeld()
-    {
-        return false;
     }
 
     protected override void WallSlide(int index) //If player is colliding with wall
@@ -414,9 +416,11 @@ public class PlayerController : PhysicsObject
             Instantiate(projectile, shotSpawn.position, shotSpawn.rotation); //spawn shot -- movement handled by shotController
             //GetComponent<AudioSource>().Play(); //play audio attached to shot object
             nextShot = Time.time + shotCooldown;
+			animator.SetTrigger("fire");
+			Debug.Log("Fire!");
         }
     }
-        
+
     private void StartDash() //When dash is ready
     {
         if (Time.time > nextDash) //Dash cooldown prevents subsequent dashes
@@ -436,7 +440,7 @@ public class PlayerController : PhysicsObject
         dashing = false;
     }
 
-    private void ContinueDash() //Increase speed while dashing
+    private void ContinueDash()
     {
         if (dashing) //Continue dash
         {
@@ -444,7 +448,7 @@ public class PlayerController : PhysicsObject
             velocity.y = 0;
             //Debug.Log("Still dashing");
         }
-        //else dashing = false; //End dash after period of time
+        else dashing = false; //End dash after period of time
     }
 
     private void OnTriggerEnter2D(Collider2D collision) //For the first frame a player touches collider
@@ -467,7 +471,6 @@ public class PlayerController : PhysicsObject
     }
 
     private void OnTriggerStay2D(Collider2D collision)
-    //private void OnCollsionEnter2d(Collision2D collision)
     {
         if (!invincible && collision.gameObject.CompareTag("Enemy")) //Hitting Enemy
         {
@@ -484,7 +487,6 @@ public class PlayerController : PhysicsObject
     private void hurt(int damage) //Reduce health and make invulnerable while recovering
     {
         health -= damage;
-        
         //if (health == 0) die();
         hitCoroutine = Recovering();
         StartCoroutine(hitCoroutine);
@@ -517,5 +519,4 @@ public class PlayerController : PhysicsObject
     {
         Debug.Log("HP: " + health + " / " + maxHP);
     }
-
 }
