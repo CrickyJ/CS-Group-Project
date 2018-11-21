@@ -520,4 +520,9 @@ public class PlayerController : PhysicsObject
     {
         Debug.Log("HP: " + health + " / " + maxHP);
     }
+
+    public int getHealth()
+    {
+        return health;
+    }
 }
