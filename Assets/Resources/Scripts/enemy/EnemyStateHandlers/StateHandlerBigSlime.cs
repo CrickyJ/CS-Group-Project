@@ -8,6 +8,7 @@ public class StateHandlerBigSlime : EnemyStateHandler {
     public float minClosedWaitTime = 0.5f;
     public float maxClosedWaitTime = 2f;
     public float maxOpenWaitTime = 1f;
+    public ShotSpawner[] ShotSpawners;
 
     private StateWait WaitEyeClosed;
     private StateWaitDamage WaitEyeOpen;
@@ -33,6 +34,11 @@ public class StateHandlerBigSlime : EnemyStateHandler {
                 enemy.animator.SetBool("EyeClosed", false);
             }
             else { //if ActiveState == WaitEyeOpen
+                //fire the shots, then start waiting to close the eye
+                foreach(ShotSpawner spawner in ShotSpawners) {
+                    spawner.SpawnProjectile((initialDirection == Direction.Right) ? true : false);
+                }
+
                 ActiveState = WaitEyeClosed;
                 enemy.animator.SetBool("EyeClosed", true);
             }

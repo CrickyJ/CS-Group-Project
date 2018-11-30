@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Environment
   - Enemy
+  - EnemyHitbox
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - 
   - Solids
   - EdgeTrigger
-  - 
+  - Projectile
   - 
   - 
   - 

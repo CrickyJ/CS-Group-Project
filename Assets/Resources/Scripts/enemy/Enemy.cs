@@ -86,6 +86,9 @@ public class Enemy : MonoBehaviour {
     protected void DoDeath() {
         animator.SetTrigger("OnDeath");
     }
+    public void DoPostDeath() {
+        Destroy(this.gameObject);
+    }
 
     // Movement
     protected void DoMovement() {

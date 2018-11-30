@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 61879559616709232}
   m_Layer: 0
   m_Name: Hitbox
-  m_TagString: Untagged
+  m_TagString: EnemyHitbox
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -608,6 +608,7 @@ MonoBehaviour:
   - {fileID: 114037666483030552}
   - {fileID: 114308502614328816}
   - {fileID: 114278377404774838}
+  Health: 0
   HealthMax: 10
   GroundDistance: 0
   Flying: 0

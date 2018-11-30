@@ -5,7 +5,7 @@ using UnityEngine;
 public class HitBox : MonoBehaviour {
     public Enemy parent;
 
-    private void OnTriggerEnter(Collider other) {
-        
+    public void ApplyDamage(float amount) {
+        parent.ApplyDamage(amount);
     }
 }

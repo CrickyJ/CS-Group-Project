@@ -15,10 +15,12 @@ public enum Direction {
 public static class LAYERMASK {
     public static int SOLIDS = 1 << 8;
     public static int EDGE_TRIGGER = 1 << 9;
+    public static int PROJECTILE = 1 << 10;
 }
 public static class LAYER {
     public static int SOLIDS = 8;
     public static int EDGE_TRIGGER = 9;
+    public static int PROJECTILE = 10;
 }
 
 public static class Extensions {
