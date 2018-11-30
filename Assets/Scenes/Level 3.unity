@@ -150,7 +150,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4578038820200280, guid: a5c07e706ef600c40abf255d8a2e0b09, type: 2}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a5c07e706ef600c40abf255d8a2e0b09, type: 2}
@@ -4127,6 +4127,12 @@ TilemapCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
+--- !u!114 &767486175 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114281117970947080, guid: a5c07e706ef600c40abf255d8a2e0b09,
+    type: 2}
+  m_PrefabInternal: {fileID: 384107720}
+  m_Script: {fileID: 11500000, guid: a067239efde8d51429e77ff4508c8f3c, type: 3}
 --- !u!1 &878529039
 GameObject:
   m_ObjectHideFlags: 0
@@ -53910,7 +53916,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4246115302580504, guid: d73e7a297cd1b054cb2d71c575d34d7f, type: 2}
       propertyPath: m_RootOrder
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d73e7a297cd1b054cb2d71c575d34d7f, type: 2}
@@ -54774,11 +54780,6 @@ Prefab:
     m_Modifications:
     - target: {fileID: 224505633874144942, guid: 015b82f75b0c8c94fbce286e4943e4ac,
         type: 2}
-      propertyPath: m_RootOrder
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 224505633874144942, guid: 015b82f75b0c8c94fbce286e4943e4ac,
-        type: 2}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -54815,7 +54816,7 @@ Prefab:
     - target: {fileID: 224505633874144942, guid: 015b82f75b0c8c94fbce286e4943e4ac,
         type: 2}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 224505633874144942, guid: 015b82f75b0c8c94fbce286e4943e4ac,
         type: 2}
@@ -54865,6 +54866,15 @@ Prefab:
     - target: {fileID: 224505633874144942, guid: 015b82f75b0c8c94fbce286e4943e4ac,
         type: 2}
       propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114316904578954176, guid: 015b82f75b0c8c94fbce286e4943e4ac,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 767486175}
+    - target: {fileID: 1387794109991636, guid: 015b82f75b0c8c94fbce286e4943e4ac, type: 2}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
