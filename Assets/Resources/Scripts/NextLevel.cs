@@ -8,9 +8,15 @@ public class NextLevel : MonoBehaviour {
 
     //TODO: When player collides with NextLevelTrigger, change scene to next in build
 
-    void OnCollisionEnter(Collision collision)
-    {
+    //void OnCollisionEnter(Collision collision)
+    //{
+    //   Debug.Log("NEXT LEVEL?");
+    //    LevelCompleteUI.SetActive(true);
+    //}
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Debug.Log("NEXT LEVEL?");
         LevelCompleteUI.SetActive(true);
     }
 

@@ -148,7 +148,7 @@ public class PlayerController : PhysicsObject
         }
         else if (jumpNumber < jumpsAllowed) //mid-air jump
         {
-            animator.SetTrigger("doublejump");
+            animator.SetTrigger("doubleJump");
             velocity.y = jumpTakeOffSpeed;
             jumpNumber++;
         }
