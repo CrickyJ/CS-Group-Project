@@ -4,11 +4,12 @@ using UnityEngine;
 
 public class ShotController : MonoBehaviour {
     private Rigidbody2D rb;
-    [SerializeField] float speed = 1, timeLimit = 2;
+    [SerializeField] float speed = 1, timeLimit = 2, damage = 1;
+    public bool isEnemyProjectile = false;
 
     ShotController(string dir) //Constructor
     {
-        Debug.Log("dir");
+
     }
 
 	// Use this for initialization
@@ -26,6 +27,19 @@ public class ShotController : MonoBehaviour {
         {
             //Debug.Log("Destroy");
             Destroy(this.gameObject);
+        }
+        else if(isEnemyProjectile && hit.gameObject.CompareTag("Player")) 
+        {
+            Debug.Log("Should damage player");
+            Destroy(this.gameObject);
+        }
+        else if(!isEnemyProjectile && hit.gameObject.CompareTag("EnemyHitbox")) 
+        {
+            HitBox hitBox = hit.gameObject.GetComponent<HitBox>();
+            if(hitBox) {
+                hitBox.ApplyDamage(damage);
+                Destroy(this.gameObject);
+            }
         }
     }
 }

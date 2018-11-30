@@ -7,6 +7,7 @@ TagManager:
   - Environment
   - PickUp
   - Enemy
+  - EnemyHitbox
   - Hazard
   layers:
   - Default
@@ -18,8 +19,8 @@ TagManager:
   - 
   - 
   - Solids
-  - 
-  - 
+  - EdgeTrigger
+  - Projectile
   - 
   - 
   - 
