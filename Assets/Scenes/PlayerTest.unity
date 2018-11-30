@@ -24425,6 +24425,15 @@ Prefab:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 179.80101
       objectReference: {fileID: 0}
+    - target: {fileID: 1544150278920910, guid: 24d3b3015bf9d4e44a111122f8153ac4, type: 2}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 61257003318079834, guid: 24d3b3015bf9d4e44a111122f8153ac4,
+        type: 2}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 24d3b3015bf9d4e44a111122f8153ac4, type: 2}
   m_IsPrefabAsset: 0

@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 //FROM: https://unity3d.com/learn/tutorials/topics/2d-game-creation/player-controller-script?playlist=17093
 
 public class PlayerController : PhysicsObject
 {
-    
     #region Movement
     [Header("Movement")]
     //Basic Movement:
@@ -485,12 +485,35 @@ public class PlayerController : PhysicsObject
         else if (invincible) Debug.Log("Damage Blocked");
     }
 
+    protected override void CheckHit(int index)
+    {
+        if(!invincible)
+        {
+            if (hitBufferList[index].collider.gameObject.CompareTag("Enemy"))
+            {
+                Debug.Log("HIT ENEMY");
+                hurt(10);
+            }
+            else if(hitBufferList[index].collider.gameObject.CompareTag("Hazard"))
+            {
+                Debug.Log("HIT HAZARD");
+                hurt(10);
+            }
+        }
+    }
+
     private void hurt(int damage) //Reduce health and make invulnerable while recovering
     {
         health -= damage;
-        //if (health == 0) die();
+        if (health <= 0) die();
         hitCoroutine = Recovering();
         StartCoroutine(hitCoroutine);
+    }
+
+    private void die()
+    {
+        Debug.Log("RIP");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void knockBack(int force) //move player backwards when hit

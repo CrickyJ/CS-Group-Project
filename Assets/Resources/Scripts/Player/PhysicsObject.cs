@@ -54,6 +54,7 @@ public class PhysicsObject : MonoBehaviour
     }
 
     protected virtual void WallSlide(int index) { } //Called in PlayerController if contacting wall
+    protected virtual void CheckHit(int index) { }
 
     void FixedUpdate()
     {
@@ -111,6 +112,7 @@ public class PhysicsObject : MonoBehaviour
                 else if (!grounded) //If player is NOT grounded
                 {
                     WallSlide(i); //If collider is NOT ground, attempt to WallJump
+                    CheckHit(i);
                     //Debug.Log("Trying to move: " + distance);
                 }
 
