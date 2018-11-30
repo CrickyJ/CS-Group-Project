@@ -215,6 +215,10 @@ Prefab:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1591129758}
+    - target: {fileID: 1387794109991636, guid: 015b82f75b0c8c94fbce286e4943e4ac, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 015b82f75b0c8c94fbce286e4943e4ac, type: 2}
   m_IsPrefabAsset: 0
@@ -56019,6 +56023,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 114281117970947080, guid: a5c07e706ef600c40abf255d8a2e0b09,
+        type: 2}
+      propertyPath: LevelCompleteUI
+      value: 
+      objectReference: {fileID: 1448053272}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a5c07e706ef600c40abf255d8a2e0b09, type: 2}
   m_IsPrefabAsset: 0
@@ -58546,6 +58555,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1448053272 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1387794109991636, guid: 015b82f75b0c8c94fbce286e4943e4ac,
+    type: 2}
+  m_PrefabInternal: {fileID: 102499759}
 --- !u!1 &1543885662
 GameObject:
   m_ObjectHideFlags: 0

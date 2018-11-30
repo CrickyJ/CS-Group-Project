@@ -20,6 +20,7 @@ public class NextLevel : MonoBehaviour {
         {
             Debug.Log("NEXT LEVEL?");
             LevelCompleteUI.SetActive(true);
+            Debug.Log(LevelCompleteUI.activeInHierarchy);
         }
         //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
