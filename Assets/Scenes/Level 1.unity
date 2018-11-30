@@ -4522,7 +4522,7 @@ GameObject:
   - component: {fileID: 646477635}
   m_Layer: 0
   m_Name: Platform
-  m_TagString: Hazard
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -56146,7 +56146,7 @@ GameObject:
   - component: {fileID: 1012983608}
   m_Layer: 0
   m_Name: Wall
-  m_TagString: Hazard
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
