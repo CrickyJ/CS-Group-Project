@@ -345,7 +345,7 @@ public class PlayerController : PhysicsObject
                 x = shotSpawnDiag; y = shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, 45);
                 rot = 45;
-                animator.SetInteger("direction", 2);
+                //animator.SetInteger("direction", 2);
                 break;
 
             case facing.up:
@@ -353,7 +353,7 @@ public class PlayerController : PhysicsObject
                 x = 0; y = shotSpawnDist;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, 90);
                 rot = 90;
-                animator.SetInteger("direction", 1);
+                //animator.SetInteger("direction", 1);
                 break;
 
             case facing.upleft:
@@ -362,7 +362,7 @@ public class PlayerController : PhysicsObject
                 x = -shotSpawnDiag; y = shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, 135);
                 rot = 135;
-                animator.SetInteger("direction", 2);
+                //animator.SetInteger("direction", 2);
                 break;
 
             case facing.left:
@@ -380,7 +380,7 @@ public class PlayerController : PhysicsObject
                 x = -shotSpawnDiag; y = -shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, -135);
                 rot = -135;
-                animator.SetInteger("direction", 3);
+                //animator.SetInteger("direction", 3);
                 break;
 
             case facing.down:
@@ -397,7 +397,7 @@ public class PlayerController : PhysicsObject
                 x = shotSpawnDiag; y = -shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, -45);
                 rot = -45;
-                animator.SetInteger("direction", 3);
+                //animator.SetInteger("direction", 3);
                 break;
 
             default:
