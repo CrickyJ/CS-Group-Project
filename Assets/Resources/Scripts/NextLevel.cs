@@ -16,13 +16,17 @@ public class NextLevel : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("NEXT LEVEL?");
-        LevelCompleteUI.SetActive(true);
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            Debug.Log("NEXT LEVEL?");
+            LevelCompleteUI.SetActive(true);
+        }
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void GoNextLevel()
     {
-        Debug.Log("Next Level!");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            Debug.Log("Next Level!");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
