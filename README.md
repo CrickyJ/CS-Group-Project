@@ -1,4 +1,4 @@
 # CS-Group-Project
 unity project
 
-making a game with others
+making some changes from the original project:
