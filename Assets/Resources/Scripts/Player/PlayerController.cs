@@ -89,7 +89,24 @@ public class PlayerController : PhysicsObject
     protected override void ComputeVelocity() //Called every frame by parent class (PhysicsObject) for MOVEMENT
     {
         animator.SetBool("isSliding", canWallJump);
-        if(flinching) //When player is hit, input is not accepted
+
+        if (enableDash)
+        {
+            if (Input.GetButtonDown("Dash")) //Speed player up
+            {
+                StartDash();
+            }
+
+            if (dashing && !flinching)
+            {
+                ContinueDash(); //Speeds up player for a brief time after pressing dash
+                animator.SetBool("dashing", dashing);
+                targetVelocity = move * maxSpeed; //Set velocity to be computed in PhysicsObject script
+                return;
+            }
+        }
+
+        if (flinching) //When player is hit, input is not accepted
         {
             knockBack(2); //player is pushed back
             return;
@@ -116,6 +133,7 @@ public class PlayerController : PhysicsObject
 
         Aim(Input.GetAxisRaw("Vertical"));
 
+        /*
         if (enableDash)
         {
             if (Input.GetButtonDown("Dash")) //Speed player up
@@ -123,7 +141,7 @@ public class PlayerController : PhysicsObject
                 StartDash();
             }
             ContinueDash(); //Speeds up player for a brief time after pressing dash
-        }
+        }*/
 
         if (Input.GetButton("Fire1")) //If holding fire button
         {
@@ -135,6 +153,8 @@ public class PlayerController : PhysicsObject
 		animator.SetBool("dashing", dashing);
 		animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
     }
+
+    //TODO: Make input a separate function from ComputeVelocity
 
     private void TryJump()
     {
@@ -451,11 +471,25 @@ public class PlayerController : PhysicsObject
     {
         if (dashing) //Continue dash
         {
-            move.x *= dashSpeed;
+            Debug.Log("DASH:" + direction);
+            switch(direction)
+            {
+                case facing.right:
+                case facing.upright:
+                case facing.downright:
+                    move = Vector2.right * dashSpeed;
+                    break;
+                case facing.left:
+                case facing.upleft:
+                case facing.downleft:
+                    move = Vector2.left * dashSpeed;
+                    break;
+            }
+            //move.x *= dashSpeed;
             velocity.y = 0;
             //Debug.Log("Still dashing");
         }
-        else dashing = false; //End dash after period of time
+        //else dashing = false; //End dash after period of time
     }
 
     private void OnTriggerEnter2D(Collider2D collision) //For the first frame a player touches collider
