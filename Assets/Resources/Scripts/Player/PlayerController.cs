@@ -86,7 +86,7 @@ public class PlayerController : PhysicsObject
         if (!enableMoreJumps) jumpsAllowed = 1; //Only one jump if multiple is not allowed
     }
 
-    protected override void ComputeVelocity() //Called every frame by base class: PhysicsObject
+    protected override void ComputeVelocity() //Called every frame by parent class (PhysicsObject) for MOVEMENT
     {
         animator.SetBool("isSliding", canWallJump);
         if(flinching) //When player is hit, input is not accepted
@@ -116,11 +116,14 @@ public class PlayerController : PhysicsObject
 
         Aim(Input.GetAxisRaw("Vertical"));
 
-        if (enableDash && Input.GetButtonDown("Dash")) //Speed player up
+        if (enableDash)
         {
-            StartDash();
+            if (Input.GetButtonDown("Dash")) //Speed player up
+            {
+                StartDash();
+            }
+            ContinueDash(); //Speeds up player for a brief time after pressing dash
         }
-        ContinueDash(); //Speeds up player for a brief time after pressing dash       
 
         if (Input.GetButton("Fire1")) //If holding fire button
         {
@@ -197,6 +200,7 @@ public class PlayerController : PhysicsObject
         }
     }
 
+    //NOT USED YET
     private IEnumerator Sliding(float dir) //Player does not move away from wall for a set time
     {
         wallSliding = true;
@@ -264,7 +268,7 @@ public class PlayerController : PhysicsObject
             }
         }
 
-        else if (Input.GetAxisRaw("Aim") > 0) //Aim diagonally up
+        else if (Input.GetAxisRaw("Aim") > 0) //Not moving, pressing AIM UP
         {
             switch (direction)
             {
@@ -279,7 +283,7 @@ public class PlayerController : PhysicsObject
             }
         }
 
-        else if (Input.GetAxisRaw("Aim") < 0) //Aim diagonally down
+        else if (Input.GetAxisRaw("Aim") < 0) //Not moving, pressing AIM DOWN
         {
             switch (direction)
             {
@@ -296,11 +300,13 @@ public class PlayerController : PhysicsObject
 
         else if (move.x > 0) //If moving right
         {
-            direction = facing.right;
+            if (canWallJump) direction = facing.left; //flips direction if wall sliding
+            else direction = facing.right;
         }
         else if (move.x < 0) //If moving left
         {
-            direction = facing.left;
+            if (canWallJump) direction = facing.right; //flips direction
+            else direction = facing.left;
         }
         else //if standing still, default to left or right direction
         {
@@ -345,7 +351,7 @@ public class PlayerController : PhysicsObject
                 x = shotSpawnDiag; y = shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, 45);
                 rot = 45;
-                //animator.SetInteger("direction", 2);
+                animator.SetInteger("direction", 2);
                 break;
 
             case facing.up:
@@ -353,7 +359,7 @@ public class PlayerController : PhysicsObject
                 x = 0; y = shotSpawnDist;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, 90);
                 rot = 90;
-                //animator.SetInteger("direction", 1);
+                animator.SetInteger("direction", 1);
                 break;
 
             case facing.upleft:
@@ -362,7 +368,7 @@ public class PlayerController : PhysicsObject
                 x = -shotSpawnDiag; y = shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, 135);
                 rot = 135;
-                //animator.SetInteger("direction", 2);
+                animator.SetInteger("direction", 2);
                 break;
 
             case facing.left:
@@ -380,7 +386,7 @@ public class PlayerController : PhysicsObject
                 x = -shotSpawnDiag; y = -shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, -135);
                 rot = -135;
-                //animator.SetInteger("direction", 3);
+                animator.SetInteger("direction", 3);
                 break;
 
             case facing.down:
@@ -397,7 +403,7 @@ public class PlayerController : PhysicsObject
                 x = shotSpawnDiag; y = -shotSpawnDiag;
                 //shotSpawn.localRotation = Quaternion.Euler(0, 0, -45);
                 rot = -45;
-                //animator.SetInteger("direction", 3);
+                animator.SetInteger("direction", 3);
                 break;
 
             default:
@@ -418,7 +424,7 @@ public class PlayerController : PhysicsObject
             //GetComponent<AudioSource>().Play(); //play audio attached to shot object
             nextShot = Time.time + shotCooldown;
 			animator.SetTrigger("fire");
-			Debug.Log("Fire!");
+			//Debug.Log("Fire!");
         }
     }
 

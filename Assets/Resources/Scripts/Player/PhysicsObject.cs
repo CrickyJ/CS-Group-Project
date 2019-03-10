@@ -14,6 +14,7 @@ public class PhysicsObject : MonoBehaviour
 
     [Tooltip ("How much player is slowed while contacting wall, default is 1")]
     [SerializeField] protected float wallFriction = 1f; //gravity modifier while sliding on wall
+    //TODO: Set maximum fall speed while wall sliding
 
     protected Vector2 targetVelocity; //Protected can be accessed by child classes
     protected bool grounded;

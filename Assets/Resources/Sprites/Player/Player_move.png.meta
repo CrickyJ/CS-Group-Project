@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 74dbdff89c2f09442bde180dfcd1fd83
+guid: 57f8714947f87144490b0a7de758f11f
 TextureImporter:
   fileIDToRecycleName:
     21300000: Player_move_0
@@ -92,7 +92,7 @@ TextureImporter:
         x: 5
         y: 16
         width: 10
-        height: 15
+        height: 14
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -100,7 +100,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 709317ce0c8e8674abe439ec7bb913dd
+      spriteID: 13bcba1a89ca6f44d8db2708849ba61a
       vertices: []
       indices: 
       edges: []
@@ -112,7 +112,7 @@ TextureImporter:
         x: 4
         y: 0
         width: 11
-        height: 14
+        height: 15
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -120,7 +120,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 233554c039493164daf7556750d9fa55
+      spriteID: d95f6f906e1a45a48b21f304aa51548e
       vertices: []
       indices: 
       edges: []
@@ -128,7 +128,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 7bfd8ab67def7f34d852d801dfc4dc42
+    spriteID: f880440a11443964da3a8fc51d37a45e
     vertices: []
     indices: 
     edges: []
