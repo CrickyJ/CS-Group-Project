@@ -14,7 +14,7 @@ public class PlayerController : PhysicsObject
     public float maxSpeed = 7;          //Horizontal speed
     Vector2 move; //Changes based on input
     public float jumpTakeOffSpeed = 7;  //Jump height
-    [SerializeField] private int jumpsAllowed = 2;
+    [SerializeField] private int maxAirJumps = 2;
     private int jumpNumber = 0;
     #endregion
 
@@ -83,34 +83,24 @@ public class PlayerController : PhysicsObject
         shotSpawnDist = shotSpawn.localPosition.x;
         shotSpawnDiag = shotSpawnDist / 1.4142f; //diagonal aiming x-y coordinates are 1/sqrt(2) of shotSpawnDist
         health = maxHP;
-        if (!enableMoreJumps) jumpsAllowed = 1; //Only one jump if multiple is not allowed
+        if (!enableMoreJumps) maxAirJumps = 1; //Only one jump if multiple is not allowed
     }
 
     protected override void ComputeVelocity() //Called every frame by parent class (PhysicsObject) for MOVEMENT
     {
-        animator.SetBool("isSliding", canWallJump);
-
-        if (enableDash)
-        {
-            if (Input.GetButtonDown("Dash")) //Speed player up
-            {
-                StartDash();
-            }
-
-            if (dashing && !flinching)
-            {
-                ContinueDash(); //Speeds up player for a brief time after pressing dash
-                animator.SetBool("dashing", dashing);
-                targetVelocity = move * maxSpeed; //Set velocity to be computed in PhysicsObject script
-                return;
-            }
-        }
+        animator.SetBool("isSliding", canWallJump);     
 
         if (flinching) //When player is hit, input is not accepted
         {
             knockBack(2); //player is pushed back
             return;
         }
+
+        if (enableDash)
+        {
+            if (TryDash()) return;
+        }
+
         move = Vector2.zero; //Reset movement vector for input & calculations
         crouching = false;
         move.x = Input.GetAxisRaw("Horizontal");
@@ -133,16 +123,6 @@ public class PlayerController : PhysicsObject
 
         Aim(Input.GetAxisRaw("Vertical"));
 
-        /*
-        if (enableDash)
-        {
-            if (Input.GetButtonDown("Dash")) //Speed player up
-            {
-                StartDash();
-            }
-            ContinueDash(); //Speeds up player for a brief time after pressing dash
-        }*/
-
         if (Input.GetButton("Fire1")) //If holding fire button
         {
             FireWeapon();
@@ -154,7 +134,7 @@ public class PlayerController : PhysicsObject
 		animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
     }
 
-    //TODO: Make input a separate function from ComputeVelocity
+    //TODO: Make input a separate function from ComputeVelocity?
 
     private void TryJump()
     {
@@ -169,7 +149,8 @@ public class PlayerController : PhysicsObject
         {
             WallJump();
         }
-        else if (jumpNumber < jumpsAllowed) //mid-air jump
+
+        else if (jumpNumber < maxAirJumps) //mid-air jump
         {
             animator.SetTrigger("doubleJump");
             velocity.y = jumpTakeOffSpeed;
@@ -196,7 +177,7 @@ public class PlayerController : PhysicsObject
         }
     }
 
-    private void GripWall() //Changes input while on wall
+    /*private void GripWall() //Changes input while on wall
     {
         if (wallSliding) return; //if player is already gripping wall
         else
@@ -211,17 +192,17 @@ public class PlayerController : PhysicsObject
             {
                 WallJump();
             }
-            else if (jumpNumber < jumpsAllowed) //mid-air jump
+            else if (jumpNumber < maxAirJumps) //mid-air jump
             {
                 animator.SetTrigger("doubleJump");
                 velocity.y = jumpTakeOffSpeed;
                 jumpNumber++;
             }
         }
-    }
+    }*/
 
     //NOT USED YET
-    private IEnumerator Sliding(float dir) //Player does not move away from wall for a set time
+    /*private IEnumerator Sliding(float dir) //Player does not move away from wall for a set time
     {
         wallSliding = true;
         if (dir > 0) //Wall is on right
@@ -254,7 +235,7 @@ public class PlayerController : PhysicsObject
         }
         else Debug.Log("NO WALL");        
         wallSliding = false;
-    }
+    }*/
 
     protected override void WallSlide(int index) //If player is colliding with wall
     {
@@ -448,16 +429,49 @@ public class PlayerController : PhysicsObject
         }
     }
 
-    private void StartDash() //When dash is ready
+    private bool TryDash() //Returns TRUE if player starts dashing
     {
-        if (Time.time > nextDash) //Dash cooldown prevents subsequent dashes
+        if (Input.GetButtonDown("Dash")) //Start Dash
         {
-            //Debug.Log("Start Dash");
-            dashCoroutine = Dashing();
-            StartCoroutine(dashCoroutine);
-            nextDash = Time.time + dashCoolDown; //Sets time when player can next dash
+            if (Time.time > nextDash) //Dash cooldown prevents subsequent dashes
+            {
+                //Debug.Log("Start Dash");
+                dashCoroutine = Dashing();
+                StartCoroutine(dashCoroutine);
+                nextDash = Time.time + dashCoolDown; //Sets time when player can next dash
+            }
+            else Debug.Log("Can't Dash Yet!");
         }
-        else Debug.Log("Can't Dash Yet!");
+
+        if (dashing && !flinching) //Continue Dash, unless player gets hurt
+        {
+            if (dashing) //Continue dash
+            {
+                switch (direction)
+                {
+                    case facing.right:
+                    case facing.upright:
+                    case facing.downright:
+                        move = Vector2.right * dashSpeed;
+                        break;
+                    case facing.left:
+                    case facing.upleft:
+                    case facing.downleft:
+                        move = Vector2.left * dashSpeed;
+                        break;
+                    default:
+                        break;
+                }
+                //move.x *= dashSpeed;
+                velocity.y = 0;
+                //Debug.Log("Still dashing");
+            }
+            //else dashing = false; //End dash after period of time
+            animator.SetBool("dashing", dashing);
+            targetVelocity = move * maxSpeed; //Set velocity to be computed in PhysicsObject script
+            return true;
+        }
+        return false;
     }
 
     private IEnumerator Dashing() //Set dashing to true
@@ -465,31 +479,6 @@ public class PlayerController : PhysicsObject
         dashing = true;
         yield return new WaitForSeconds(dashTime);
         dashing = false;
-    }
-
-    private void ContinueDash()
-    {
-        if (dashing) //Continue dash
-        {
-            Debug.Log("DASH:" + direction);
-            switch(direction)
-            {
-                case facing.right:
-                case facing.upright:
-                case facing.downright:
-                    move = Vector2.right * dashSpeed;
-                    break;
-                case facing.left:
-                case facing.upleft:
-                case facing.downleft:
-                    move = Vector2.left * dashSpeed;
-                    break;
-            }
-            //move.x *= dashSpeed;
-            velocity.y = 0;
-            //Debug.Log("Still dashing");
-        }
-        //else dashing = false; //End dash after period of time
     }
 
     private void OnTriggerEnter2D(Collider2D collision) //For the first frame a player touches collider
@@ -500,11 +489,11 @@ public class PlayerController : PhysicsObject
             {
                 health += 10;
                 if (health > maxHP) health = maxHP; //set health to max if it goes over
-                printHealth();
+                //printHealth();
             }
             else
             {
-                Debug.Log("Health Full!"); printHealth();
+                //Debug.Log("Health Full!"); printHealth();
                 return;
             }
             Destroy(collision.gameObject);
@@ -558,7 +547,8 @@ public class PlayerController : PhysicsObject
 
     private void knockBack(int force) //move player backwards when hit
     {
-        if(!flipSprite) //Facing right
+        dashing = false;
+        if (!flipSprite) //Facing right
         {
             targetVelocity.x = -force;
         }
@@ -577,11 +567,6 @@ public class PlayerController : PhysicsObject
         flinching = false;
         yield return new WaitForSeconds(recoverTime);
         invincible = false;
-    }
-
-    private void printHealth()
-    {
-        Debug.Log("HP: " + health + " / " + maxHP);
     }
 
     public int getHealth()
