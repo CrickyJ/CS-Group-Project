@@ -244,6 +244,14 @@ public class PlayerController : PhysicsObject
             canWallJump = true; //slows down player
         }
     }
+    /* TODO:
+        If sliding on wall
+        When player moves away from wall
+        STICK to wall for a small period of time
+        If player jumps, wall jump
+        If player falls of wall, return input to normal?
+     */
+
 
     private void Aim(float vert)
     {
