@@ -99,6 +99,7 @@ public class PhysicsObject : MonoBehaviour
 
             for (int i = 0; i < hitBufferList.Count; i++) //Normal is calculated to determine angle of object
             {
+                CheckHit(i);
                 Vector2 currentNormal = hitBufferList[i].normal;
                 if (currentNormal.y > minGroundNormalY) //if angle works as "ground"
                 {
@@ -113,7 +114,7 @@ public class PhysicsObject : MonoBehaviour
                 else if (!grounded) //If player is NOT grounded
                 {
                     WallSlide(i); //If collider is NOT ground, attempt to WallJump
-                    CheckHit(i);
+                    //CheckHit(i);
                     //Debug.Log("Trying to move: " + distance);
                 }
 

@@ -9,6 +9,7 @@ TagManager:
   - Enemy
   - EnemyHitbox
   - Hazard
+  - PlayerProjectile
   layers:
   - Default
   - TransparentFX

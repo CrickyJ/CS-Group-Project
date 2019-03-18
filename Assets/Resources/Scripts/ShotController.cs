@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ShotController : MonoBehaviour {
     private Rigidbody2D rb;
-    [SerializeField] float speed = 1, timeLimit = 2, damage = 1;
+    [SerializeField] float speed = 1, timeLimit = 2;//, damage = 1;
     public bool isEnemyProjectile = false;
 
     ShotController(string dir) //Constructor
@@ -18,6 +18,7 @@ public class ShotController : MonoBehaviour {
         rb.velocity = transform.right * speed;
        // rb.velocity = direction * speed;
         Destroy(this.gameObject, timeLimit); //Object will be destroyed after time limit
+        if (this.gameObject.CompareTag("Hazard")) isEnemyProjectile = true;
 	}
 
     private void OnTriggerEnter2D(Collider2D hit)
@@ -28,7 +29,18 @@ public class ShotController : MonoBehaviour {
             //Debug.Log("Destroy");
             Destroy(this.gameObject);
         }
-        else if(isEnemyProjectile && hit.gameObject.CompareTag("Player")) 
+
+        else if(!isEnemyProjectile && hit.gameObject.CompareTag("Enemy"))
+        {
+            Destroy(this.gameObject);
+        }
+
+        else if(isEnemyProjectile && hit.gameObject.CompareTag("Player"))
+        {
+            Destroy(this.gameObject, 0.02f);
+        }
+
+        /*else if(isEnemyProjectile && hit.gameObject.CompareTag("Player")) 
         {
             Debug.Log("Should damage player");
             Destroy(this.gameObject);
@@ -40,6 +52,6 @@ public class ShotController : MonoBehaviour {
                 hitBox.ApplyDamage(damage);
                 Destroy(this.gameObject);
             }
-        }
+        }*/
     }
 }

@@ -83,7 +83,7 @@ public class PlayerController : PhysicsObject
         shotSpawnDist = shotSpawn.localPosition.x;
         shotSpawnDiag = shotSpawnDist / 1.4142f; //diagonal aiming x-y coordinates are 1/sqrt(2) of shotSpawnDist
         health = maxHP;
-        if (!enableMoreJumps) maxAirJumps = 1; //Only one jump if multiple is not allowed
+        if (!enableMoreJumps) maxAirJumps = 0; //Only one jump if multiple is not allowed
     }
 
     protected override void ComputeVelocity() //Called every frame by parent class (PhysicsObject) for MOVEMENT
@@ -142,7 +142,7 @@ public class PlayerController : PhysicsObject
         if (grounded) //jump normally
         {
             velocity.y = jumpTakeOffSpeed;
-            jumpNumber++;
+            //jumpNumber++;
         }
 
         else if (canWallJump) //reverse direction and jump
