@@ -32,11 +32,18 @@ public class PlayerController : PhysicsObject
     #region Wall Jumping
     [Header("Wall Jump")]
     [SerializeField] private bool enableWallJump = true;
+
     [Tooltip ("Horizontal input reversed right after wall jumping")]
     [SerializeField] float wallJumpTimer = 0.5f; //Time after walljump to block input
     private float timer = 0.0f; //tracks elapsed time
     private bool jumpedLeft; //tracks player direction just after walljump
     private bool wallSliding;
+
+    [Tooltip("Time input can be held away from wall before player moves")]
+    [SerializeField] float gripTime = 0.5f;
+    private enum stick { none, toLeft, toRight } //Which direction player sticks to while wall sliding
+    stick grip = stick.none;
+
     private IEnumerator wallCoroutine;
     #endregion
 
@@ -128,6 +135,8 @@ public class PlayerController : PhysicsObject
             FireWeapon();
         }
 
+        WallGrip();
+
         targetVelocity = move * maxSpeed; //Set velocity to be computed in PhysicsObject script
 		animator.SetBool("grounded", grounded);
 		animator.SetBool("dashing", dashing);
@@ -177,66 +186,6 @@ public class PlayerController : PhysicsObject
         }
     }
 
-    /*private void GripWall() //Changes input while on wall
-    {
-        if (wallSliding) return; //if player is already gripping wall
-        else
-        {
-            if (grounded) //jump normally
-            {
-                velocity.y = jumpTakeOffSpeed;
-                jumpNumber++;
-            }
-
-            else if (canWallJump) //reverse direction and jump
-            {
-                WallJump();
-            }
-            else if (jumpNumber < maxAirJumps) //mid-air jump
-            {
-                animator.SetTrigger("doubleJump");
-                velocity.y = jumpTakeOffSpeed;
-                jumpNumber++;
-            }
-        }
-    }*/
-
-    //NOT USED YET
-    /*private IEnumerator Sliding(float dir) //Player does not move away from wall for a set time
-    {
-        wallSliding = true;
-        if (dir > 0) //Wall is on right
-        {
-            //Debug.Log("Right");
-            while (canWallJump)
-            {
-                if(move.x <= 0)
-                {
-                    move.x = 1;
-                    yield return new WaitForSeconds(1);
-                    Debug.Log("BLOCK");
-                }
-                yield return null;
-            }
-        }
-        else if (dir < 0) //Wall is on left
-        {
-            //Debug.Log("Left");
-            while (canWallJump)
-            {
-                if (move.x >= 0)
-                {
-                    move.x = -1;
-                    yield return new WaitForSeconds(1);
-                    Debug.Log("BLOCK");
-                }
-                yield return null;
-            }
-        }
-        else Debug.Log("NO WALL");        
-        wallSliding = false;
-    }*/
-
     protected override void WallSlide(int index) //If player is colliding with wall
     {
         if (enableWallJump && hitBufferList[index].collider.gameObject.CompareTag("Environment"))
@@ -244,14 +193,33 @@ public class PlayerController : PhysicsObject
             canWallJump = true; //slows down player
         }
     }
-    /* TODO:
-        If sliding on wall
-        When player moves away from wall
-        STICK to wall for a small period of time
-        If player jumps, wall jump
-        If player falls of wall, return input to normal?
-     */
 
+    private void WallGrip() //For a brief period, player sticks to wall when moving away
+    {
+        switch(grip)
+        {
+            case stick.toLeft:
+                //If player moves right, wait for timer (unless they jumped)
+                break;
+
+            case stick.toRight:
+                //If player moves left, wait for timer (unless they jumped)
+                break;
+
+            default:
+                //Do not grip to wall
+                break;
+        }
+    }
+
+    private IEnumerator StartGrip() //Start timer to block movement away from wall
+    {
+        if (move.x > 0) grip = stick.toRight;
+        else if (move.x < 0) grip = stick.toLeft;
+        else grip = 0;
+        yield return new WaitForSeconds(gripTime);
+        grip = 0;
+    }
 
     private void Aim(float vert)
     {
